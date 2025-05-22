@@ -1,0 +1,42 @@
+# Зависимости
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Сборка
+dist/
+build/
+*.tsbuildinfo
+
+# Среда выполнения
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Редакторы
+.vscode/
+.idea/
+.cursor/*
+!.cursor/mcp.json
+*.swp
+*.swo
+
+# ОС
+.DS_Store
+Thumbs.db
+
+# Логи
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Процессы и временные файлы
+*.pid
+*.tmp
+*.temp
+test_results.txt

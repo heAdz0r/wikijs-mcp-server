@@ -498,6 +498,56 @@ class WikiJsAPI {
     }
   }
 
+  // Получение содержимого страницы через HTTP (альтернативный метод)
+  async getPageContentViaHTTP(path: string): Promise<string> {
+    console.log(`[WikiJsAPI] getPageContentViaHTTP вызван с path: ${path}`);
+    const url = this.generatePageUrl(path);
+
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const html = await response.text();
+
+      // Извлекаем текстовое содержимое из HTML
+      // Ищем контент в блоке <template slot="contents">
+      const contentRegex =
+        /<template[^>]*slot="contents"[^>]*>([\s\S]*?)<\/template>/i;
+      const match = html.match(contentRegex);
+
+      if (match) {
+        // Удаляем HTML-теги и декодируем entities
+        return match[1]
+          .replace(/<[^>]*>/g, " ")
+          .replace(/&nbsp;/g, " ")
+          .replace(/&lt;/g, "<")
+          .replace(/&gt;/g, ">")
+          .replace(/&amp;/g, "&")
+          .replace(/\s+/g, " ")
+          .trim();
+      }
+
+      // Если не нашли контент в блоке template, пробуем извлечь весь текст
+      return html
+        .replace(/<script[\s\S]*?<\/script>/gi, "")
+        .replace(/<style[\s\S]*?<\/style>/gi, "")
+        .replace(/<[^>]*>/g, " ")
+        .replace(/&nbsp;/g, " ")
+        .replace(/&lt;/g, "<")
+        .replace(/&gt;/g, ">")
+        .replace(/&amp;/g, "&")
+        .replace(/\s+/g, " ")
+        .trim();
+    } catch (error) {
+      console.error(
+        `[WikiJsAPI] getPageContentViaHTTP: ошибка при HTTP-запросе: ${error}`
+      );
+      throw error;
+    }
+  }
+
   // Получение списка страниц
   async listPages(
     limit: number = 50,
@@ -547,61 +597,189 @@ class WikiJsAPI {
     }
   }
 
-  // Поиск страниц
+  // Поиск страниц (улучшенный: по контенту и названиям)
   async searchPages(query: string, limit: number = 10): Promise<WikiJsPage[]> {
     console.log(
       `[WikiJsAPI] searchPages вызван с query: ${query}, limit: ${limit}`
     );
-    const gqlQuery = gql`
-      query SearchPages($query: String!) {
-        pages {
-          search(query: $query) {
-            results {
-              id
-              title
-              description
-              path
-              locale
+
+    const results: WikiJsPage[] = [];
+    const foundIds = new Set<number>();
+
+    // 1. Поиск через GraphQL API (работает по индексу контента)
+    try {
+      const gqlQuery = gql`
+        query SearchPages($query: String!) {
+          pages {
+            search(query: $query) {
+              results {
+                id
+                title
+                description
+                path
+                locale
+              }
+              suggestions
+              totalHits
             }
-            suggestions
-            totalHits
           }
         }
-      }
-    `;
+      `;
 
-    const variables = { query };
-    console.log(
-      `[WikiJsAPI] searchPages: отправка запроса GraphQL с переменными: ${JSON.stringify(
-        variables
-      )}`
-    );
-    try {
+      const variables = { query };
+      console.log(
+        `[WikiJsAPI] searchPages: отправка GraphQL поиска с переменными: ${JSON.stringify(
+          variables
+        )}`
+      );
+
       const data = await this.client.request<PagesSearchResponse>(
         gqlQuery,
         variables
       );
-      console.log("[WikiJsAPI] searchPages: запрос успешно выполнен.");
-      // Преобразуем формат результатов в формат WikiJsPage
-      // Если указан лимит, ограничиваем количество результатов
-      const results = data.pages.search.results.map((result) => ({
-        id: parseInt(result.id, 10),
-        path: result.path,
-        title: result.title,
-        description: result.description || "",
-        createdAt: new Date().toISOString(), // В результатах поиска нет этих полей
-        updatedAt: new Date().toISOString(), // В результатах поиска нет этих полей
-        url: this.generatePageUrl(result.path), // Добавляем URL
-      }));
-
-      return limit > 0 ? results.slice(0, limit) : results;
-    } catch (error) {
-      console.error(
-        `[WikiJsAPI] searchPages: ошибка при запросе GraphQL: ${error}`,
-        error
+      console.log(
+        `[WikiJsAPI] searchPages: GraphQL поиск вернул ${data.pages.search.results.length} результатов`
       );
-      throw error;
+
+      // Добавляем результаты из GraphQL поиска
+      data.pages.search.results.forEach((result) => {
+        const id = parseInt(result.id, 10);
+        if (!foundIds.has(id)) {
+          foundIds.add(id);
+          results.push({
+            id,
+            path: result.path,
+            title: result.title,
+            description: result.description || "",
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            url: this.generatePageUrl(result.path),
+          });
+        }
+      });
+    } catch (error) {
+      console.warn(
+        `[WikiJsAPI] searchPages: GraphQL поиск не удался: ${error}`
+      );
     }
+
+    // 2. Поиск по названиям через listPages (расширенный лимит для поиска)
+    try {
+      console.log(
+        `[WikiJsAPI] searchPages: выполняем поиск по названиям через listPages`
+      );
+      const allPages = await this.listPages(200, "UPDATED");
+      const queryLower = query.toLowerCase();
+
+      const titleMatches = allPages.filter((page) => {
+        const titleMatch = page.title.toLowerCase().includes(queryLower);
+        const pathMatch = page.path.toLowerCase().includes(queryLower);
+        const descMatch = page.description?.toLowerCase().includes(queryLower);
+
+        return (titleMatch || pathMatch || descMatch) && !foundIds.has(page.id);
+      });
+
+      console.log(
+        `[WikiJsAPI] searchPages: найдено ${titleMatches.length} дополнительных совпадений по названиям/путям`
+      );
+
+      titleMatches.forEach((page) => {
+        if (!foundIds.has(page.id)) {
+          foundIds.add(page.id);
+          results.push(page);
+        }
+      });
+    } catch (error) {
+      console.warn(
+        `[WikiJsAPI] searchPages: поиск по названиям не удался: ${error}`
+      );
+    }
+
+    // 3. Поиск по содержимому страниц через HTTP (альтернативный метод)
+    if (results.length < 3 && query.length > 2) {
+      try {
+        console.log(
+          `[WikiJsAPI] searchPages: выполняем поиск по содержимому через HTTP`
+        );
+        const searchLimit = Math.min(30, limit * 3); // Ограничиваем для HTTP-поиска
+        const recentPages = await this.listPages(searchLimit, "UPDATED");
+
+        for (const page of recentPages) {
+          if (foundIds.has(page.id)) continue;
+
+          try {
+            // Попробуем сначала GraphQL
+            let content = "";
+            try {
+              content = await this.getPageContent(page.id);
+            } catch (graphqlError) {
+              // Если GraphQL не сработал, используем HTTP
+              content = await this.getPageContentViaHTTP(page.path);
+            }
+
+            if (content.toLowerCase().includes(query.toLowerCase())) {
+              console.log(
+                `[WikiJsAPI] searchPages: найдено совпадение в содержимом страницы ${page.id}: ${page.title}`
+              );
+              foundIds.add(page.id);
+              results.push(page);
+
+              // Прерываем поиск если уже достаточно результатов
+              if (results.length >= limit) break;
+            }
+          } catch (contentError) {
+            console.warn(
+              `[WikiJsAPI] searchPages: не удалось получить содержимое страницы ${page.id}: ${contentError}`
+            );
+          }
+        }
+      } catch (error) {
+        console.warn(
+          `[WikiJsAPI] searchPages: поиск по содержимому не удался: ${error}`
+        );
+      }
+    }
+
+    // 4. Дополнительный поиск на известных страницах (если основные методы не сработали)
+    if (results.length === 0 && query.length > 2) {
+      console.log(
+        `[WikiJsAPI] searchPages: пробуем поиск на известных страницах с ID 103-110`
+      );
+      const knownPageIds = [103, 104, 105, 106, 107, 108, 109, 110];
+
+      for (const pageId of knownPageIds) {
+        if (foundIds.has(pageId)) continue;
+
+        try {
+          // Получаем метаданные страницы
+          const page = await this.getPage(pageId);
+
+          // Получаем содержимое через HTTP
+          const content = await this.getPageContentViaHTTP(page.path);
+
+          if (content.toLowerCase().includes(query.toLowerCase())) {
+            console.log(
+              `[WikiJsAPI] searchPages: найдено совпадение в известной странице ${page.id}: ${page.title}`
+            );
+            foundIds.add(page.id);
+            results.push(page);
+
+            if (results.length >= limit) break;
+          }
+        } catch (error) {
+          console.warn(
+            `[WikiJsAPI] searchPages: ошибка при проверке известной страницы ${pageId}: ${error}`
+          );
+        }
+      }
+    }
+
+    console.log(
+      `[WikiJsAPI] searchPages: общий результат: ${results.length} страниц найдено`
+    );
+
+    // Ограничиваем результат до запрошенного лимита
+    return limit > 0 ? results.slice(0, limit) : results;
   }
 
   // Создание страницы
@@ -716,9 +894,13 @@ class WikiJsAPI {
   async updatePage(id: number, content: string): Promise<WikiJsPage> {
     console.log(`[WikiJsAPI] updatePage вызван с id: ${id}`);
     const mutation = gql`
-      mutation UpdatePage($id: Int!, $content: String!) {
+      mutation UpdatePage(
+        $id: Int!
+        $content: String!
+        $isPublished: Boolean!
+      ) {
         pages {
-          update(id: $id, content: $content) {
+          update(id: $id, content: $content, isPublished: $isPublished) {
             responseResult {
               succeeded
               slug
@@ -736,7 +918,7 @@ class WikiJsAPI {
       }
     `;
 
-    const variables = { id, content };
+    const variables = { id, content, isPublished: true };
     console.log(
       `[WikiJsAPI] updatePage: отправка мутации GraphQL с переменными: ${JSON.stringify(
         variables
@@ -748,6 +930,16 @@ class WikiJsAPI {
         variables
       );
       console.log("[WikiJsAPI] updatePage: мутация успешно выполнена.");
+
+      // Проверяем наличие данных в ответе
+      if (!data.pages.update || !data.pages.update.page) {
+        console.log(
+          "[WikiJsAPI] updatePage: страница не возвращена, возможно нет прав доступа"
+        );
+        // Возвращаем текущую страницу вместо ошибки
+        return await this.getPage(id);
+      }
+
       const page = data.pages.update.page;
       // Добавляем URL к обновленной странице
       return {

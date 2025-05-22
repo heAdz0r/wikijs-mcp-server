@@ -392,20 +392,33 @@ export const wikiJsTools: WikiJsToolDefinition[] = [
 class WikiJsAPI {
   private client: GraphQLClient;
   private token: string;
+  private baseUrl: string;
+  private locale: string;
 
-  constructor(baseUrl: string = "http://localhost:3000", token: string = "") {
+  constructor(
+    baseUrl: string = "http://localhost:3000",
+    token: string = "",
+    locale: string = "ru"
+  ) {
     console.log(
       `[WikiJsAPI] Конструктор вызван. baseUrl: ${baseUrl}, token: ${
         token ? "предоставлен" : "отсутствует"
-      }`
+      }, locale: ${locale}`
     );
     this.client = new GraphQLClient(`${baseUrl}/graphql`);
     this.token = token;
+    this.baseUrl = baseUrl;
+    this.locale = locale;
 
     if (token) {
       console.log("[WikiJsAPI] Устанавливается заголовок Authorization.");
       this.client.setHeader("Authorization", `Bearer ${token}`);
     }
+  }
+
+  // Метод для генерации URL страницы
+  private generatePageUrl(path: string): string {
+    return generatePageUrl(this.baseUrl, this.locale, path);
   }
 
   // Получение страницы по ID
@@ -435,7 +448,12 @@ class WikiJsAPI {
     try {
       const data = await this.client.request<PageResponse>(query, variables);
       console.log("[WikiJsAPI] getPage: запрос успешно выполнен.");
-      return data.pages.single;
+      const page = data.pages.single;
+      // Добавляем URL к странице
+      return {
+        ...page,
+        url: this.generatePageUrl(page.path),
+      };
     } catch (error) {
       console.error(
         `[WikiJsAPI] getPage: ошибка при запросе GraphQL: ${error}`,
@@ -515,7 +533,11 @@ class WikiJsAPI {
         variables
       );
       console.log("[WikiJsAPI] listPages: запрос успешно выполнен.");
-      return data.pages.list;
+      // Добавляем URL к каждой странице
+      return data.pages.list.map((page) => ({
+        ...page,
+        url: this.generatePageUrl(page.path),
+      }));
     } catch (error) {
       console.error(
         `[WikiJsAPI] listPages: ошибка при запросе GraphQL: ${error}`,
@@ -569,6 +591,7 @@ class WikiJsAPI {
         description: result.description || "",
         createdAt: new Date().toISOString(), // В результатах поиска нет этих полей
         updatedAt: new Date().toISOString(), // В результатах поиска нет этих полей
+        url: this.generatePageUrl(result.path), // Добавляем URL
       }));
 
       return limit > 0 ? results.slice(0, limit) : results;
@@ -674,7 +697,12 @@ class WikiJsAPI {
           }`
         );
       }
-      return data.pages.create.page;
+      const page = data.pages.create.page;
+      // Добавляем URL к созданной странице
+      return {
+        ...page,
+        url: this.generatePageUrl(page.path),
+      };
     } catch (error) {
       console.error(
         `[WikiJsAPI] createPage: ошибка при мутации GraphQL: ${error}`,
@@ -720,7 +748,12 @@ class WikiJsAPI {
         variables
       );
       console.log("[WikiJsAPI] updatePage: мутация успешно выполнена.");
-      return data.pages.update.page;
+      const page = data.pages.update.page;
+      // Добавляем URL к обновленной странице
+      return {
+        ...page,
+        url: this.generatePageUrl(page.path),
+      };
     } catch (error) {
       console.error(
         `[WikiJsAPI] updatePage: ошибка при мутации GraphQL: ${error}`,
@@ -994,7 +1027,22 @@ class WikiJsAPI {
 // Создаем API-клиент для использования внутри модуля
 const WIKIJS_BASE_URL = process.env.WIKIJS_BASE_URL || "http://localhost:3000";
 const WIKIJS_TOKEN = process.env.WIKIJS_TOKEN || "";
-const api = new WikiJsAPI(WIKIJS_BASE_URL, WIKIJS_TOKEN);
+const WIKIJS_LOCALE = process.env.WIKIJS_LOCALE || "ru";
+
+// Функция для формирования URL страницы
+function generatePageUrl(
+  baseUrl: string,
+  locale: string,
+  path: string
+): string {
+  // Удаляем слэш в конце базового URL если он есть
+  const cleanBaseUrl = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
+  // Удаляем слэш в начале пути если он есть
+  const cleanPath = path.startsWith("/") ? path.slice(1) : path;
+  return `${cleanBaseUrl}/${locale}/${cleanPath}`;
+}
+
+const api = new WikiJsAPI(WIKIJS_BASE_URL, WIKIJS_TOKEN, WIKIJS_LOCALE);
 
 // Реализации инструментов
 const implementations = {
@@ -1404,4 +1452,5 @@ export {
   WikiJsUser,
   WikiJsGroup,
   ResponseResult,
+  WikiJsAPI,
 };

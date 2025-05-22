@@ -23,6 +23,7 @@ export interface WikiJsPage {
   content?: string;
   createdAt?: string;
   updatedAt?: string;
+  url?: string; // Добавляем поле для ссылки на страницу
 }
 
 // Тип для пользователей Wiki.js

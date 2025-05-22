@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "wikijs": {
+      "transport": "http",
+      "url": "http://localhost:3200/mcp",
+      "events": "http://localhost:3200/mcp/events",
+      "cwd": "/path/to/your/wikijs-mcp-server",
+      "env": {
+        "WIKIJS_BASE_URL": "http://localhost:3000",
+        "WIKIJS_TOKEN": "your_wikijs_api_token_here"
+      }
+    }
+  }
+}

@@ -21,9 +21,9 @@
     "dev": "nodemon --exec ts-node src/server.ts",
     "build": "tsc",
     "demo": "ts-node src/demo.ts",
-    "client": "node mcp_client.js",
-    "server:stdio": "node mcp_wikijs_stdin.js",
-    "http-client": "node mcp_http_client.js",
+    "client": "node lib/mcp_client.js",
+    "server:stdio": "node lib/mcp_wikijs_stdin.js",
+    "http-client": "node lib/mcp_http_client.js",
     "test:http": "node scripts/test_mcp.js",
     "test:stdin": "node scripts/test_mcp_stdin.js"
   },
@@ -46,9 +46,9 @@
   "files": [
     "dist/",
     "src/",
+    "lib/",
     "scripts/",
     ".cursor/",
-    "*.js",
     "*.md",
     "example.env",
     "tsconfig.json"

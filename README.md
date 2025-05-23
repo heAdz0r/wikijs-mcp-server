@@ -193,7 +193,7 @@ Add to VS Code settings:
   "mcp.servers": {
     "wikijs": {
       "command": "node",
-      "args": ["mcp_wikijs_stdin.js"],
+      "args": ["lib/mcp_wikijs_stdin.js"],
       "cwd": "/path/to/wikijs-mcp"
     }
   }
@@ -211,7 +211,15 @@ wikijs-mcp-server/
 │   ├── tools.ts           # Tool definitions
 │   ├── api.ts             # Wiki.js API client
 │   ├── types.ts           # Data types
-│   └── schemas.ts         # Zod validation schemas
+│   ├── schemas.ts         # Zod validation schemas
+│   └── README.md          # Source code documentation
+├── lib/                   # JavaScript library files
+│   ├── fixed_mcp_http_server.js    # Main HTTP server (compiled)
+│   ├── mcp_wikijs_stdin.js         # STDIN server for editors
+│   ├── mcp_client.js               # Demo MCP client
+│   ├── mcp_http_client.js          # HTTP MCP client
+│   ├── mcp_wrapper.js              # MCP protocol utilities
+│   └── README.md                   # Library documentation
 ├── scripts/               # Management scripts
 │   ├── setup.sh          # Initial setup
 │   ├── start_http.sh     # Start HTTP server
@@ -224,8 +232,6 @@ wikijs-mcp-server/
 ├── .cursor/               # Cursor MCP configuration
 │   └── mcp.json          # MCP configuration file (CRITICALLY IMPORTANT!)
 ├── dist/                  # Compiled TypeScript code
-├── *.js                   # Main JS files
-├── example.env            # Environment configuration example
 ├── package.json           # Project metadata
 └── README.md             # Main documentation
 ```
@@ -367,6 +373,8 @@ updated_user = await mcp_client.call_tool("update_user", {
 
 ## 📚 Documentation
 
+- [Source Code Documentation](./src/README.md) - TypeScript source code structure
+- [Library Documentation](./lib/README.md) - JavaScript library files
 - [Scripts Documentation](./scripts/README.md) - description of all management scripts
 - [Changelog](./CHANGELOG.md) - release and update log
 - [License](./LICENSE) - project usage terms
@@ -415,7 +423,7 @@ Search works in 4 stages:
 {
   "method": "search_pages",
   "params": {
-    "query": "API",
+    "query": "ZELEBOBA",
     "limit": 5
   }
 }
@@ -502,6 +510,7 @@ With limited GraphQL API permissions, the system:
 - Enhanced server API with new routes for unpublished page management
 - Better error handling for page deletion operations
 - Comprehensive GraphQL mutation support for advanced page operations
+- **Restructured project**: Moved JavaScript files to `lib/` directory for better organization
 
 #### 🐛 Bug Fixes:
 

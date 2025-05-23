@@ -134,7 +134,7 @@ Try the new unpublished pages management:
 node --version
 
 # Reinstall dependencies
-rm -rf node_modules package-lock.json
+rm -rf node_modules
 npm install
 npm run build
 ```
@@ -142,6 +142,8 @@ npm run build
 ## 📞 Support
 
 - 📖 [Full Documentation](./README.md)
+- 📂 [Source Code Docs](./src/README.md)
+- 📚 [Library Docs](./lib/README.md)
 - 🐛 [Report Issue](https://github.com/heAdz0r/wikijs-mcp-server/issues)
 - 💬 [Discussions](https://github.com/heAdz0r/wikijs-mcp-server/discussions)
 

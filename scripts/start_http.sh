@@ -10,8 +10,8 @@ PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$PROJECT_DIR"
 
 # Убить существующий процесс HTTP сервера, если он запущен
-pkill -f "node mcp_http_server.js" || true
-pkill -f "node fixed_mcp_http_server.js" || true
+pkill -f "node lib/mcp_http_server.js" || true
+pkill -f "node lib/fixed_mcp_http_server.js" || true
 
 # Загрузить переменные окружения из .env файла
 if [ -f .env ]; then
@@ -33,7 +33,7 @@ fi
 
 # Запуск исправленного HTTP сервера
 echo "Запуск MCP HTTP сервера для Wiki.js на порту $PORT с базовым URL $WIKIJS_BASE_URL"
-node fixed_mcp_http_server.js > fixed_server.log 2>&1 &
+node lib/fixed_mcp_http_server.js > fixed_server.log 2>&1 &
 
 # Сохраняем PID
 echo $! > server.pid

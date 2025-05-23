@@ -9,9 +9,14 @@ PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # Переходим в директорию проекта
 cd "$PROJECT_DIR"
 
-# Убить существующий процесс HTTP сервера, если он запущен
-pkill -f "node lib/mcp_http_server.js" || true
-pkill -f "node lib/fixed_mcp_http_server.js" || true
+# Убить существующие процессы MCP сервера, если они запущены
+echo "Останавливаем существующие MCP серверы..."
+pkill -f "fixed_mcp_http_server.js" || true
+pkill -f "mcp_wikijs_stdin.js" || true
+pkill -f "mcp_http_server.js" || true
+
+# Ждем завершения процессов
+sleep 1
 
 # Загрузить переменные окружения из .env файла
 if [ -f .env ]; then

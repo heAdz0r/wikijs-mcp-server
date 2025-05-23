@@ -99,10 +99,13 @@ WIKIJS_TOKEN=your_wikijs_api_token_here
 ### HTTP server (recommended)
 
 ```bash
-# Main HTTP server with Cursor MCP support
+# Start main HTTP server with Cursor MCP support
 npm start
 # or
 npm run start:http
+
+# Stop server
+npm run stop
 ```
 
 ### TypeScript version
@@ -217,12 +220,12 @@ wikijs-mcp-server/
 │   ├── fixed_mcp_http_server.js    # Main HTTP server (compiled)
 │   ├── mcp_wikijs_stdin.js         # STDIN server for editors
 │   ├── mcp_client.js               # Demo MCP client
-│   ├── mcp_http_client.js          # HTTP MCP client
 │   ├── mcp_wrapper.js              # MCP protocol utilities
 │   └── README.md                   # Library documentation
 ├── scripts/               # Management scripts
 │   ├── setup.sh          # Initial setup
 │   ├── start_http.sh     # Start HTTP server
+│   ├── stop_server.sh    # Stop HTTP server
 │   ├── start_typescript.sh # Start TypeScript version
 │   ├── setup_cursor_mcp.sh # Cursor setup
 │   ├── test.sh           # Run tests
@@ -249,6 +252,7 @@ wikijs-mcp-server/
 #### Running Servers
 
 - `npm start` / `npm run start:http` - HTTP MCP server (port 3200)
+- `npm run stop` - Stop all MCP servers
 - `npm run start:typescript` - TypeScript version of server (port 8000)
 - `npm run server:stdio` - STDIO version for direct integration
 
@@ -258,7 +262,6 @@ wikijs-mcp-server/
 - `npm run demo` - Capability demonstration
 - `npm test` - Run tests
 - `npm run client` - Run demo client
-- `npm run http-client` - Run HTTP client
 
 ### API Endpoints (HTTP mode)
 

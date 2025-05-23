@@ -17,24 +17,28 @@ The server provides a unified interface for working with Wiki.js that can be use
 ### 📄 Page Management
 
 - Get Wiki.js pages by ID
-- Get page content
-- Get list of pages with sorting
-- Smart page search (by content, titles, and metadata)
+- Get page content by ID
+- List pages with sorting options
+- Search pages by query
 - Create new pages
 - Update existing pages
 - Delete pages
+- **🆕 List all pages including unpublished**
+- **🆕 Search unpublished pages**
+- **🆕 Force delete pages (including unpublished)**
+- **🆕 Get page publication status**
+- **🆕 Publish unpublished pages**
 
 ### 👥 User Management
 
-- Get list of users
-- Search users
+- List users
+- Search users by query
 - Create new users
 - Update user information
 
 ### 🔧 Group Management
 
-- Get list of user groups
-- Manage group membership
+- List user groups
 
 ### 🌐 Transports
 
@@ -258,7 +262,7 @@ wikijs-mcp-server/
 
 ### Usage Examples
 
-```javascript
+````javascript
 // Get list of pages
 {
   "method": "list_pages",
@@ -277,6 +281,74 @@ wikijs-mcp-server/
     "path": "folder/new-page"
   }
 }
+
+### Search for pages:
+```python
+# Search in all content and metadata
+result = await mcp_client.call_tool("search_pages", {
+    "query": "magic system",
+    "limit": 5
+})
+````
+
+### Working with Unpublished Pages:
+
+```python
+# Get all pages including unpublished ones
+all_pages = await mcp_client.call_tool("list_all_pages", {
+    "limit": 100,
+    "includeUnpublished": True
+})
+
+# Search only unpublished pages
+unpublished = await mcp_client.call_tool("search_unpublished_pages", {
+    "query": "draft",
+    "limit": 10
+})
+
+# Check page publication status
+status = await mcp_client.call_tool("get_page_status", {
+    "id": 42
+})
+
+# Publish an unpublished page
+result = await mcp_client.call_tool("publish_page", {
+    "id": 42
+})
+
+# Force delete page (works with unpublished pages)
+result = await mcp_client.call_tool("force_delete_page", {
+    "id": 42
+})
+```
+
+### User management:
+
+```python
+# List all users
+users = await mcp_client.call_tool("list_users")
+
+# Search users by query
+search_result = await mcp_client.call_tool("search_users", {
+    "query": "John"
+})
+
+# Create new user
+new_user = await mcp_client.call_tool("create_user", {
+    "email": "john@example.com",
+    "name": "John Doe",
+    "passwordRaw": "password123",
+    "providerKey": "local",
+    "groups": [1],
+    "mustChangePassword": false,
+    "sendWelcomeEmail": true
+})
+
+# Update user information
+updated_user = await mcp_client.call_tool("update_user", {
+    "id": 1,
+    "name": "John Doe Updated"
+})
 ```
 
 ## 🐛 Troubleshooting
@@ -412,3 +484,52 @@ With limited GraphQL API permissions, the system:
 - Switches to HTTP method for content retrieval
 - Uses direct requests to HTML pages
 - Preserves all page metadata
+
+## 📝 Changelog
+
+### Version 1.3.0 - Unpublished Pages Management (Latest)
+
+#### 🆕 New Features:
+
+- **`list_all_pages`** - Get all pages including unpublished ones
+- **`search_unpublished_pages`** - Search specifically in unpublished pages
+- **`force_delete_page`** - Enhanced deletion that works with unpublished pages
+- **`get_page_status`** - Check publication status of any page
+- **`publish_page`** - Publish unpublished pages programmatically
+
+#### 🔧 Improvements:
+
+- Enhanced server API with new routes for unpublished page management
+- Better error handling for page deletion operations
+- Comprehensive GraphQL mutation support for advanced page operations
+
+#### 🐛 Bug Fixes:
+
+- Fixed issues with accessing unpublished pages through standard APIs
+- Improved authentication handling for admin-level operations
+
+### Version 1.2.0 - International Release
+
+#### 🌍 Internationalization:
+
+- Complete English translation of documentation
+- README.md and QUICK_START.md now available in English
+- Prepared for international market expansion
+
+### Version 1.1.0 - Enhanced Search & User Management
+
+#### ✨ Features:
+
+- Smart multi-method page search (GraphQL + content + metadata)
+- User management tools (create, update, search)
+- Group management capabilities
+- Improved content extraction from HTML pages
+
+## 🛠️ Available Tools
+
+### 📄 Page Tools
+
+| Tool Name | Description | Parameters |
+| --------- | ----------- | ---------- |
+
+| `get_page`

@@ -221,6 +221,72 @@ server.post("/update_user", async (request) => {
   }
 });
 
+// Получение всех страниц включая неопубликованные
+server.get("/list_all_pages", async (request) => {
+  const { limit, orderBy, includeUnpublished } = request.query as {
+    limit?: string;
+    orderBy?: string;
+    includeUnpublished?: string;
+  };
+  try {
+    return await wikiJsApi.getAllPagesList(
+      limit ? parseInt(limit) : undefined,
+      orderBy || undefined,
+      includeUnpublished !== "false"
+    );
+  } catch (error) {
+    server.log.error(error);
+    return { error: String(error) };
+  }
+});
+
+// Поиск неопубликованных страниц
+server.get("/search_unpublished_pages", async (request) => {
+  const { query, limit } = request.query as { query: string; limit?: string };
+  try {
+    return await wikiJsApi.searchUnpublishedPages(
+      query,
+      limit ? parseInt(limit) : undefined
+    );
+  } catch (error) {
+    server.log.error(error);
+    return { error: String(error) };
+  }
+});
+
+// Принудительное удаление страницы
+server.post("/force_delete_page", async (request) => {
+  const { id } = request.body as { id: number };
+  try {
+    return await wikiJsApi.forceDeletePage(id);
+  } catch (error) {
+    server.log.error(error);
+    return { error: String(error) };
+  }
+});
+
+// Получение статуса публикации страницы
+server.get("/get_page_status", async (request) => {
+  const { id } = request.query as { id: string };
+  try {
+    return await wikiJsApi.getPageStatus(parseInt(id));
+  } catch (error) {
+    server.log.error(error);
+    return { error: String(error) };
+  }
+});
+
+// Публикация страницы
+server.post("/publish_page", async (request) => {
+  const { id } = request.body as { id: number };
+  try {
+    return await wikiJsApi.publishPage(id);
+  } catch (error) {
+    server.log.error(error);
+    return { error: String(error) };
+  }
+});
+
 // Запуск сервера
 const start = async () => {
   try {

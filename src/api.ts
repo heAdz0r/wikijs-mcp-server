@@ -303,6 +303,7 @@ export class WikiJsApi {
           ) {
             responseResult {
               succeeded
+              errorCode
               slug
               message
             }
@@ -312,5 +313,186 @@ export class WikiJsApi {
     `;
     const response: any = await this.client.request(mutation);
     return response.users.update.responseResult;
+  }
+
+  // Получение всех страниц включая неопубликованные
+  async getAllPagesList(
+    limit: number = 50,
+    orderBy: string = "TITLE",
+    includeUnpublished: boolean = true
+  ): Promise<(WikiJsPage & { isPublished: boolean })[]> {
+    const query = `
+      {
+        pages {
+          list (limit: ${limit}, orderBy: ${orderBy}) {
+            id
+            path
+            title
+            description
+            createdAt
+            updatedAt
+            isPublished
+          }
+        }
+      }
+    `;
+    const response: any = await this.client.request(query);
+    let pages = response.pages.list;
+
+    // Фильтруем по статусу публикации если нужно
+    if (!includeUnpublished) {
+      pages = pages.filter((page: any) => page.isPublished);
+    }
+
+    return pages;
+  }
+
+  // Поиск неопубликованных страниц
+  async searchUnpublishedPages(
+    query: string,
+    limit: number = 10
+  ): Promise<(WikiJsPage & { isPublished: boolean })[]> {
+    // Получаем все страницы включая неопубликованные
+    const allPages = await this.getAllPagesList(200, "UPDATED", true);
+
+    // Фильтруем только неопубликованные страницы
+    const unpublishedPages = allPages.filter((page) => !page.isPublished);
+
+    // Ищем по запросу в названии, пути или описании
+    const queryLower = query.toLowerCase();
+    const matches = unpublishedPages.filter((page) => {
+      const titleMatch = page.title.toLowerCase().includes(queryLower);
+      const pathMatch = page.path.toLowerCase().includes(queryLower);
+      const descMatch = page.description?.toLowerCase().includes(queryLower);
+
+      return titleMatch || pathMatch || descMatch;
+    });
+
+    return matches.slice(0, limit);
+  }
+
+  // Принудительное удаление страницы (включая неопубликованные)
+  async forceDeletePage(id: number): Promise<ResponseResult> {
+    // Попробуем несколько вариантов удаления
+    const mutations = [
+      // Обычное удаление
+      `mutation {
+        pages {
+          delete (id: ${id}) {
+            responseResult {
+              succeeded
+              errorCode
+              slug
+              message
+            }
+          }
+        }
+      }`,
+      // Удаление с purge параметром
+      `mutation {
+        pages {
+          delete (id: ${id}, purge: true) {
+            responseResult {
+              succeeded
+              errorCode
+              slug
+              message
+            }
+          }
+        }
+      }`,
+      // Альтернативная мутация через render
+      `mutation {
+        pages {
+          render (id: ${id}, mode: DELETE) {
+            responseResult {
+              succeeded
+              errorCode
+              slug
+              message
+            }
+          }
+        }
+      }`,
+    ];
+
+    for (const [index, mutation] of mutations.entries()) {
+      try {
+        console.log(`Попытка ${index + 1} удаления страницы ${id}`);
+        const response: any = await this.client.request(mutation);
+
+        if (
+          response.pages.delete?.responseResult?.succeeded ||
+          response.pages.render?.responseResult?.succeeded
+        ) {
+          console.log(`Страница ${id} успешно удалена на попытке ${index + 1}`);
+          return (
+            response.pages.delete?.responseResult ||
+            response.pages.render?.responseResult
+          );
+        }
+      } catch (error) {
+        console.warn(`Попытка ${index + 1} не удалась: ${error}`);
+      }
+    }
+
+    // Если все попытки не удались
+    return {
+      succeeded: false,
+      errorCode: 500,
+      message: `Не удалось удалить страницу ${id} ни одним из доступных методов`,
+    };
+  }
+
+  // Получение статуса публикации страницы
+  async getPageStatus(
+    id: number
+  ): Promise<WikiJsPage & { isPublished: boolean }> {
+    const query = `
+      {
+        pages {
+          single (id: ${id}) {
+            id
+            path
+            title
+            description
+            createdAt
+            updatedAt
+            isPublished
+          }
+        }
+      }
+    `;
+    const response: any = await this.client.request(query);
+    return response.pages.single;
+  }
+
+  // Публикация страницы
+  async publishPage(id: number): Promise<ResponseResult> {
+    const mutation = `
+      mutation {
+        pages {
+          render (id: ${id}) {
+            responseResult {
+              succeeded
+              errorCode
+              slug
+              message
+            }
+          }
+        }
+      }
+    `;
+
+    try {
+      const response: any = await this.client.request(mutation);
+      return response.pages.render.responseResult;
+    } catch (error) {
+      return {
+        succeeded: false,
+        errorCode: 500,
+        message: `Ошибка при публикации страницы: ${error}`,
+      };
+    }
   }
 }

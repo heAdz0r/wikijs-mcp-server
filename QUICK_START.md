@@ -86,6 +86,27 @@ Find all pages related to "documentation"
 Create a new page "Test Page" with content "This is a test"
 ```
 
+### 5. Test New Features (1 minute)
+
+Try the new unpublished pages management:
+
+```bash
+# In Cursor, try these MCP commands:
+# - List all pages including unpublished
+# - Search in unpublished pages only
+# - Check page publication status
+# - Force delete pages (works with unpublished)
+# - Publish unpublished pages
+```
+
+**Example in Cursor:**
+
+```
+@wikijs get me all unpublished pages
+@wikijs check status of page ID 123
+@wikijs publish page ID 123
+```
+
 ## ⚡ If Something Doesn't Work
 
 ### Issue: Cursor doesn't see tools

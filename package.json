@@ -1,7 +1,7 @@
 {
   "name": "wikijs-mcp",
-  "version": "1.2.0",
-  "description": "Model Context Protocol (MCP) server for Wiki.js GraphQL API integration",
+  "version": "1.3.0",
+  "description": "MCP Server for Wiki.js integration with unpublished pages management",
   "main": "dist/server.js",
   "homepage": "https://github.com/heAdz0r/wikijs-mcp-server",
   "repository": {

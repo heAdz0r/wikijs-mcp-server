@@ -386,6 +386,119 @@ export const wikiJsTools: WikiJsToolDefinition[] = [
       },
     },
   },
+
+  // Получение всех страниц (включая неопубликованные)
+  {
+    type: "function",
+    function: {
+      name: "list_all_pages",
+      description:
+        "Получает список всех страниц Wiki.js включая неопубликованные с возможностью сортировки",
+      parameters: {
+        type: "object",
+        properties: {
+          limit: {
+            type: "number",
+            description:
+              "Максимальное количество страниц для возврата (по умолчанию 50)",
+          },
+          orderBy: {
+            type: "string",
+            description: "Поле для сортировки (TITLE, CREATED, UPDATED)",
+          },
+          includeUnpublished: {
+            type: "boolean",
+            description:
+              "Включать неопубликованные страницы (по умолчанию true)",
+          },
+        },
+        required: [],
+      },
+    },
+  },
+
+  // Поиск неопубликованных страниц
+  {
+    type: "function",
+    function: {
+      name: "search_unpublished_pages",
+      description: "Поиск неопубликованных страниц по запросу в Wiki.js",
+      parameters: {
+        type: "object",
+        properties: {
+          query: {
+            type: "string",
+            description: "Поисковый запрос",
+          },
+          limit: {
+            type: "number",
+            description:
+              "Максимальное количество результатов (по умолчанию 10)",
+          },
+        },
+        required: ["query"],
+      },
+    },
+  },
+
+  // Принудительное удаление страницы (включая неопубликованные)
+  {
+    type: "function",
+    function: {
+      name: "force_delete_page",
+      description:
+        "Принудительно удаляет страницу из Wiki.js (включая неопубликованные страницы)",
+      parameters: {
+        type: "object",
+        properties: {
+          id: {
+            type: "number",
+            description: "ID страницы для удаления",
+          },
+        },
+        required: ["id"],
+      },
+    },
+  },
+
+  // Получение статуса публикации страницы
+  {
+    type: "function",
+    function: {
+      name: "get_page_status",
+      description:
+        "Получает статус публикации и детальную информацию о странице",
+      parameters: {
+        type: "object",
+        properties: {
+          id: {
+            type: "number",
+            description: "ID страницы в Wiki.js",
+          },
+        },
+        required: ["id"],
+      },
+    },
+  },
+
+  // Публикация страницы
+  {
+    type: "function",
+    function: {
+      name: "publish_page",
+      description: "Публикует неопубликованную страницу в Wiki.js",
+      parameters: {
+        type: "object",
+        properties: {
+          id: {
+            type: "number",
+            description: "ID страницы для публикации",
+          },
+        },
+        required: ["id"],
+      },
+    },
+  },
 ];
 
 // Базовый класс для API Wiki.js
@@ -1214,6 +1327,326 @@ class WikiJsAPI {
       throw error;
     }
   }
+
+  // Получение всех страниц включая неопубликованные
+  async listAllPages(
+    limit: number = 50,
+    orderBy: string = "TITLE",
+    includeUnpublished: boolean = true
+  ): Promise<(WikiJsPage & { isPublished: boolean })[]> {
+    console.log(
+      `[WikiJsAPI] listAllPages вызван с limit: ${limit}, orderBy: ${orderBy}, includeUnpublished: ${includeUnpublished}`
+    );
+    const query = gql`
+      query ListAllPages($limit: Int, $orderBy: PageOrderBy) {
+        pages {
+          list(limit: $limit, orderBy: $orderBy) {
+            id
+            path
+            title
+            description
+            createdAt
+            updatedAt
+            isPublished
+          }
+        }
+      }
+    `;
+
+    const variables = { limit, orderBy };
+    console.log(
+      `[WikiJsAPI] listAllPages: отправка запроса GraphQL с переменными: ${JSON.stringify(
+        variables
+      )}`
+    );
+    try {
+      interface AllPagesListResponse {
+        pages: {
+          list: (WikiJsPage & { isPublished: boolean })[];
+        };
+      }
+
+      const data = await this.client.request<AllPagesListResponse>(
+        query,
+        variables
+      );
+      console.log("[WikiJsAPI] listAllPages: запрос успешно выполнен.");
+
+      let pages = data.pages.list;
+
+      // Фильтруем по статусу публикации если нужно
+      if (!includeUnpublished) {
+        pages = pages.filter((page) => page.isPublished);
+      }
+
+      // Добавляем URL к каждой странице
+      return pages.map((page) => ({
+        ...page,
+        url: this.generatePageUrl(page.path),
+      }));
+    } catch (error) {
+      console.error(
+        `[WikiJsAPI] listAllPages: ошибка при запросе GraphQL: ${error}`,
+        error
+      );
+      throw error;
+    }
+  }
+
+  // Поиск неопубликованных страниц
+  async searchUnpublishedPages(
+    query: string,
+    limit: number = 10
+  ): Promise<(WikiJsPage & { isPublished: boolean })[]> {
+    console.log(
+      `[WikiJsAPI] searchUnpublishedPages вызван с query: ${query}, limit: ${limit}`
+    );
+
+    try {
+      // Получаем все страницы включая неопубликованные
+      const allPages = await this.listAllPages(200, "UPDATED", true);
+
+      // Фильтруем только неопубликованные страницы
+      const unpublishedPages = allPages.filter((page) => !page.isPublished);
+
+      // Ищем по запросу в названии, пути или описании
+      const queryLower = query.toLowerCase();
+      const matches = unpublishedPages.filter((page) => {
+        const titleMatch = page.title.toLowerCase().includes(queryLower);
+        const pathMatch = page.path.toLowerCase().includes(queryLower);
+        const descMatch = page.description?.toLowerCase().includes(queryLower);
+
+        return titleMatch || pathMatch || descMatch;
+      });
+
+      console.log(
+        `[WikiJsAPI] searchUnpublishedPages: найдено ${matches.length} неопубликованных страниц`
+      );
+
+      return matches.slice(0, limit);
+    } catch (error) {
+      console.error(
+        `[WikiJsAPI] searchUnpublishedPages: ошибка при поиске: ${error}`,
+        error
+      );
+      throw error;
+    }
+  }
+
+  // Принудительное удаление страницы (включая неопубликованные)
+  async forceDeletePage(
+    id: number
+  ): Promise<{ success: boolean; message: string | undefined }> {
+    console.log(`[WikiJsAPI] forceDeletePage вызван с id: ${id}`);
+
+    // Сначала попробуем обычное удаление
+    try {
+      return await this.deletePage(id);
+    } catch (error) {
+      console.warn(
+        `[WikiJsAPI] forceDeletePage: обычное удаление не удалось, пробуем альтернативные методы: ${error}`
+      );
+    }
+
+    // Если обычное удаление не сработало, попробуем альтернативные методы
+    const mutations = [
+      // Попробуем удалить с дополнительными параметрами
+      gql`
+        mutation ForceDeletePage($id: Int!) {
+          pages {
+            delete(id: $id, purge: true) {
+              responseResult {
+                succeeded
+                errorCode
+                message
+              }
+            }
+          }
+        }
+      `,
+      // Попробуем мутацию render для удаления
+      gql`
+        mutation DeletePageRender($id: Int!) {
+          pages {
+            render(id: $id, mode: DELETE) {
+              responseResult {
+                succeeded
+                errorCode
+                message
+              }
+            }
+          }
+        }
+      `,
+      // Альтернативная мутация удаления
+      gql`
+        mutation AlternativeDelete($id: Int!) {
+          pages {
+            deletePage(id: $id) {
+              responseResult {
+                succeeded
+                errorCode
+                message
+              }
+            }
+          }
+        }
+      `,
+    ];
+
+    for (const [index, mutation] of mutations.entries()) {
+      try {
+        console.log(
+          `[WikiJsAPI] forceDeletePage: попытка ${
+            index + 1
+          } удаления страницы ${id}`
+        );
+
+        const variables = { id };
+        const data = await this.client.request<PageDeleteResponse>(
+          mutation,
+          variables
+        );
+
+        if (data.pages.delete?.responseResult?.succeeded) {
+          console.log(
+            `[WikiJsAPI] forceDeletePage: страница ${id} успешно удалена на попытке ${
+              index + 1
+            }`
+          );
+          return {
+            success: true,
+            message: data.pages.delete.responseResult.message,
+          };
+        }
+      } catch (error) {
+        console.warn(
+          `[WikiJsAPI] forceDeletePage: попытка ${
+            index + 1
+          } не удалась: ${error}`
+        );
+      }
+    }
+
+    // Если все попытки не удались, возвращаем ошибку
+    const errorMessage = `Не удалось удалить страницу ${id} ни одним из доступных методов`;
+    console.error(`[WikiJsAPI] forceDeletePage: ${errorMessage}`);
+    return {
+      success: false,
+      message: errorMessage,
+    };
+  }
+
+  // Получение статуса публикации страницы
+  async getPageStatus(
+    id: number
+  ): Promise<WikiJsPage & { isPublished: boolean }> {
+    console.log(`[WikiJsAPI] getPageStatus вызван с id: ${id}`);
+    const query = gql`
+      query GetPageStatus($id: Int!) {
+        pages {
+          single(id: $id) {
+            id
+            path
+            title
+            description
+            createdAt
+            updatedAt
+            isPublished
+          }
+        }
+      }
+    `;
+
+    const variables = { id };
+    console.log(
+      `[WikiJsAPI] getPageStatus: отправка запроса GraphQL с переменными: ${JSON.stringify(
+        variables
+      )}`
+    );
+    try {
+      interface PageStatusResponse {
+        pages: {
+          single: WikiJsPage & { isPublished: boolean };
+        };
+      }
+
+      const data = await this.client.request<PageStatusResponse>(
+        query,
+        variables
+      );
+      console.log("[WikiJsAPI] getPageStatus: запрос успешно выполнен.");
+      const page = data.pages.single;
+      // Добавляем URL к странице
+      return {
+        ...page,
+        url: this.generatePageUrl(page.path),
+      };
+    } catch (error) {
+      console.error(
+        `[WikiJsAPI] getPageStatus: ошибка при запросе GraphQL: ${error}`,
+        error
+      );
+      throw error;
+    }
+  }
+
+  // Публикация страницы
+  async publishPage(
+    id: number
+  ): Promise<{ success: boolean; message: string | undefined }> {
+    console.log(`[WikiJsAPI] publishPage вызван с id: ${id}`);
+    const mutation = gql`
+      mutation PublishPage($id: Int!) {
+        pages {
+          render(id: $id) {
+            responseResult {
+              succeeded
+              errorCode
+              message
+            }
+          }
+        }
+      }
+    `;
+
+    const variables = { id };
+    console.log(
+      `[WikiJsAPI] publishPage: отправка мутации GraphQL с переменными: ${JSON.stringify(
+        variables
+      )}`
+    );
+    try {
+      interface PublishPageResponse {
+        pages: {
+          render: {
+            responseResult: ResponseResult;
+          };
+        };
+      }
+
+      const data = await this.client.request<PublishPageResponse>(
+        mutation,
+        variables
+      );
+      console.log("[WikiJsAPI] publishPage: мутация успешно выполнена.");
+
+      const result = data.pages.render.responseResult;
+      return {
+        success: result.succeeded,
+        message: result.message,
+      };
+    } catch (error) {
+      console.error(
+        `[WikiJsAPI] publishPage: ошибка при мутации GraphQL: ${error}`,
+        error
+      );
+      return {
+        success: false,
+        message: `Ошибка при публикации страницы: ${error}`,
+      };
+    }
+  }
 }
 
 // Создаем API-клиент для использования внутри модуля
@@ -1347,6 +1780,50 @@ const implementations = {
       )}`
     );
     return await api.updateUser(params.id, params.name);
+  },
+  list_all_pages: async (params: any) => {
+    console.log(
+      `[Implementations] list_all_pages вызван с параметрами: ${JSON.stringify(
+        params
+      )}`
+    );
+    return await api.listAllPages(
+      params.limit,
+      params.orderBy,
+      params.includeUnpublished
+    );
+  },
+  search_unpublished_pages: async (params: any) => {
+    console.log(
+      `[Implementations] search_unpublished_pages вызван с параметрами: ${JSON.stringify(
+        params
+      )}`
+    );
+    return await api.searchUnpublishedPages(params.query, params.limit);
+  },
+  force_delete_page: async (params: any) => {
+    console.log(
+      `[Implementations] force_delete_page вызван с параметрами: ${JSON.stringify(
+        params
+      )}`
+    );
+    return await api.forceDeletePage(params.id);
+  },
+  get_page_status: async (params: any) => {
+    console.log(
+      `[Implementations] get_page_status вызван с параметрами: ${JSON.stringify(
+        params
+      )}`
+    );
+    return await api.getPageStatus(params.id);
+  },
+  publish_page: async (params: any) => {
+    console.log(
+      `[Implementations] publish_page вызван с параметрами: ${JSON.stringify(
+        params
+      )}`
+    );
+    return await api.publishPage(params.id);
   },
 };
 
@@ -1635,6 +2112,119 @@ export const wikiJsToolsWithImpl = [
       },
     },
     implementation: implementations.update_user,
+  },
+  // Получение всех страниц включая неопубликованные
+  {
+    type: "function",
+    function: {
+      name: "list_all_pages",
+      description:
+        "Получает список всех страниц Wiki.js включая неопубликованные с возможностью сортировки",
+      parameters: {
+        type: "object",
+        properties: {
+          limit: {
+            type: "number",
+            description:
+              "Максимальное количество страниц для возврата (по умолчанию 50)",
+          },
+          orderBy: {
+            type: "string",
+            description: "Поле для сортировки (TITLE, CREATED, UPDATED)",
+          },
+          includeUnpublished: {
+            type: "boolean",
+            description:
+              "Включать неопубликованные страницы (по умолчанию true)",
+          },
+        },
+        required: [],
+      },
+    },
+    implementation: implementations.list_all_pages,
+  },
+  // Поиск неопубликованных страниц
+  {
+    type: "function",
+    function: {
+      name: "search_unpublished_pages",
+      description: "Поиск неопубликованных страниц по запросу в Wiki.js",
+      parameters: {
+        type: "object",
+        properties: {
+          query: {
+            type: "string",
+            description: "Поисковый запрос",
+          },
+          limit: {
+            type: "number",
+            description:
+              "Максимальное количество результатов (по умолчанию 10)",
+          },
+        },
+        required: ["query"],
+      },
+    },
+    implementation: implementations.search_unpublished_pages,
+  },
+  // Принудительное удаление страницы (включая неопубликованные)
+  {
+    type: "function",
+    function: {
+      name: "force_delete_page",
+      description:
+        "Принудительно удаляет страницу из Wiki.js (включая неопубликованные страницы)",
+      parameters: {
+        type: "object",
+        properties: {
+          id: {
+            type: "number",
+            description: "ID страницы для удаления",
+          },
+        },
+        required: ["id"],
+      },
+    },
+    implementation: implementations.force_delete_page,
+  },
+  // Получение статуса публикации страницы
+  {
+    type: "function",
+    function: {
+      name: "get_page_status",
+      description:
+        "Получает статус публикации и детальную информацию о странице",
+      parameters: {
+        type: "object",
+        properties: {
+          id: {
+            type: "number",
+            description: "ID страницы в Wiki.js",
+          },
+        },
+        required: ["id"],
+      },
+    },
+    implementation: implementations.get_page_status,
+  },
+  // Публикация страницы
+  {
+    type: "function",
+    function: {
+      name: "publish_page",
+      description: "Публикует неопубликованную страницу в Wiki.js",
+      parameters: {
+        type: "object",
+        properties: {
+          id: {
+            type: "number",
+            description: "ID страницы для публикации",
+          },
+        },
+        required: ["id"],
+      },
+    },
+    implementation: implementations.publish_page,
   },
 ];
 

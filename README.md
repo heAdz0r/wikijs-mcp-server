@@ -4,148 +4,148 @@
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Node.js](https://img.shields.io/badge/node.js-%3E%3D18.0.0-brightgreen)
 
-Model Context Protocol (MCP) сервер для интеграции с Wiki.js через GraphQL API.
+Model Context Protocol (MCP) server for Wiki.js integration via GraphQL API.
 
-## 📖 Описание
+## 📖 Description
 
-Этот проект предоставляет MCP сервер для взаимодействия с Wiki.js через GraphQL API. MCP (Model Context Protocol) - это открытый протокол, разработанный Anthropic, который позволяет AI-моделям безопасно взаимодействовать с внешними сервисами и инструментами.
+This project provides an MCP server for interacting with Wiki.js through GraphQL API. MCP (Model Context Protocol) is an open protocol developed by Anthropic that enables AI models to safely interact with external services and tools.
 
-Сервер предоставляет унифицированный интерфейс для работы с Wiki.js, который может использоваться различными AI-агентами и инструментами, поддерживающими MCP.
+The server provides a unified interface for working with Wiki.js that can be used by various AI agents and tools supporting MCP.
 
-## ✨ Возможности
+## ✨ Features
 
-### 📄 Управление страницами
+### 📄 Page Management
 
-- Получение страниц Wiki.js по ID
-- Получение содержимого страниц
-- Получение списка страниц с сортировкой
-- Умный поиск страниц (по содержимому, названиям и метаданным)
-- Создание новых страниц
-- Обновление существующих страниц
-- Удаление страниц
+- Get Wiki.js pages by ID
+- Get page content
+- Get list of pages with sorting
+- Smart page search (by content, titles, and metadata)
+- Create new pages
+- Update existing pages
+- Delete pages
 
-### 👥 Управление пользователями
+### 👥 User Management
 
-- Получение списка пользователей
-- Поиск пользователей
-- Создание новых пользователей
-- Обновление информации о пользователях
+- Get list of users
+- Search users
+- Create new users
+- Update user information
 
-### 🔧 Управление группами
+### 🔧 Group Management
 
-- Получение списка групп пользователей
-- Управление членством в группах
+- Get list of user groups
+- Manage group membership
 
-### 🌐 Транспорты
+### 🌐 Transports
 
-- **STDIO**: для интеграции с редакторами (Cursor, VS Code)
-- **HTTP**: для веб-интеграций и API доступа
+- **STDIO**: for editor integration (Cursor, VS Code)
+- **HTTP**: for web integrations and API access
 
-## 🚀 Быстрый старт
+## 🚀 Quick Start
 
-> **⚡ Хотите начать прямо сейчас?** См. [Руководство за 5 минут](./QUICK_START.md)
+> **⚡ Want to start right now?** See [5-Minute Guide](./QUICK_START.md)
 
-### Установка
+### Installation
 
-1. **Клонируйте репозиторий:**
+1. **Clone the repository:**
 
 ```bash
 git clone https://github.com/heAdz0r/wikijs-mcp-server.git
 cd wikijs-mcp-server
 ```
 
-2. **Запустите автоматическую настройку:**
+2. **Run automatic setup:**
 
 ```bash
 npm run setup
 ```
 
-Этот скрипт автоматически:
+This script will automatically:
 
-- Установит зависимости
-- Создаст файл `.env` на основе `example.env`
-- Соберет TypeScript код
+- Install dependencies
+- Create `.env` file based on `example.env`
+- Build TypeScript code
 
-### Конфигурация
+### Configuration
 
-3. **Отредактируйте файл `.env`** и укажите настройки вашего Wiki.js:
+3. **Edit the `.env` file** and specify your Wiki.js settings:
 
 ```env
-# Порт для HTTP MCP сервера
+# Port for HTTP MCP server
 PORT=3200
 
-# Базовый URL для Wiki.js (без /graphql)
+# Base URL for Wiki.js (without /graphql)
 WIKIJS_BASE_URL=http://localhost:3000
 
-# API-токен Wiki.js
+# Wiki.js API token
 WIKIJS_TOKEN=your_wikijs_api_token_here
 ```
 
-4. **Отредактируйте файл `.cursor/mcp.json`** и замените `your_wikijs_api_token_here` на ваш реальный токен
+4. **Edit the `.cursor/mcp.json` file** and replace `your_wikijs_api_token_here` with your real token
 
-> **Как получить API токен Wiki.js:**
+> **How to get Wiki.js API token:**
 >
-> 1. Войдите в админ панель Wiki.js
-> 2. Перейдите в раздел "API"
-> 3. Создайте новый API ключ с необходимыми правами
-> 4. Скопируйте токен в `.env` И в `.cursor/mcp.json`
+> 1. Log into Wiki.js admin panel
+> 2. Go to "API" section
+> 3. Create a new API key with necessary permissions
+> 4. Copy the token to `.env` AND to `.cursor/mcp.json`
 
-## 📦 Запуск
+## 📦 Running
 
-### HTTP сервер (рекомендуется)
+### HTTP server (recommended)
 
 ```bash
-# Основной HTTP сервер с поддержкой Cursor MCP
+# Main HTTP server with Cursor MCP support
 npm start
-# или
+# or
 npm run start:http
 ```
 
-### TypeScript версия
+### TypeScript version
 
 ```bash
 npm run start:typescript
 ```
 
-### STDIO режим (для прямой интеграции с редакторами)
+### STDIO mode (for direct editor integration)
 
 ```bash
 npm run server:stdio
 ```
 
-### Режим разработки
+### Development mode
 
 ```bash
 npm run dev
 ```
 
-### Тестирование
+### Testing
 
 ```bash
 npm test
 ```
 
-## 🔌 Интеграция с редакторами
+## 🔌 Editor Integration
 
 ### Cursor IDE
 
-> **⚠️ ВАЖНО:** Без файла `.cursor/mcp.json` интеграция с Cursor работать НЕ БУДЕТ!
+> **⚠️ IMPORTANT:** Without `.cursor/mcp.json` file, Cursor integration will NOT work!
 
-#### Быстрая настройка
+#### Quick Setup
 
-1. **Запустите HTTP сервер:**
+1. **Start HTTP server:**
 
 ```bash
 npm start
 ```
 
-2. **Автоматическая настройка конфигурации:**
+2. **Automatic configuration setup:**
 
 ```bash
 npm run setup:cursor
 ```
 
-3. **Отредактируйте `.cursor/mcp.json`** и укажите ваш реальный токен:
+3. **Edit `.cursor/mcp.json`** and specify your real token:
 
 ```json
 {
@@ -164,25 +164,25 @@ npm run setup:cursor
 }
 ```
 
-#### Критические параметры
+#### Critical Parameters
 
-- **`transport: "http"`** - обязательно HTTP транспорт
-- **`url: "http://localhost:3200/mcp"`** - точный URL для JSON-RPC
-- **`events: "http://localhost:3200/mcp/events"`** - URL для Server-Sent Events
-- **`WIKIJS_TOKEN`** - реальный API токен Wiki.js (не плейсхолдер!)
+- **`transport: "http"`** - mandatory HTTP transport
+- **`url: "http://localhost:3200/mcp"`** - exact URL for JSON-RPC
+- **`events: "http://localhost:3200/mcp/events"`** - URL for Server-Sent Events
+- **`WIKIJS_TOKEN`** - real Wiki.js API token (not placeholder!)
 
-#### Проверка работы
+#### Verification
 
-После настройки в Cursor должны появиться инструменты с префиксом `mcp_wikijs_*`:
+After setup, tools with `mcp_wikijs_*` prefix should appear in Cursor:
 
 - `mcp_wikijs_list_pages()`
 - `mcp_wikijs_search_pages()`
 - `mcp_wikijs_get_page()`
-- И другие...
+- And others...
 
-### VS Code (с расширением MCP)
+### VS Code (with MCP extension)
 
-Добавьте в настройки VS Code:
+Add to VS Code settings:
 
 ```json
 {
@@ -196,70 +196,70 @@ npm run setup:cursor
 }
 ```
 
-## 🛠 Разработка
+## 🛠 Development
 
-### Структура проекта
+### Project Structure
 
 ```
 wikijs-mcp-server/
-├── src/                    # Исходный код TypeScript
-│   ├── server.ts          # HTTP сервер
-│   ├── tools.ts           # Определения инструментов
-│   ├── api.ts             # API клиент Wiki.js
-│   ├── types.ts           # Типы данных
-│   └── schemas.ts         # Схемы валидации Zod
-├── scripts/               # Скрипты управления
-│   ├── setup.sh          # Первоначальная настройка
-│   ├── start_http.sh     # Запуск HTTP сервера
-│   ├── start_typescript.sh # Запуск TypeScript версии
-│   ├── setup_cursor_mcp.sh # Настройка Cursor
-│   ├── test.sh           # Запуск тестов
-│   ├── test_mcp.js       # Тест HTTP сервера
-│   ├── test_mcp_stdin.js # Тест STDIN сервера
-│   └── README.md         # Документация скриптов
-├── .cursor/               # Конфигурация Cursor MCP
-│   └── mcp.json          # Файл конфигурации MCP (КРИТИЧЕСКИ ВАЖЕН!)
-├── dist/                  # Скомпилированный TypeScript код
-├── *.js                   # Основные JS файлы
-├── example.env            # Пример конфигурации окружения
-├── package.json           # Метаданные проекта
-└── README.md             # Основная документация
+├── src/                    # TypeScript source code
+│   ├── server.ts          # HTTP server
+│   ├── tools.ts           # Tool definitions
+│   ├── api.ts             # Wiki.js API client
+│   ├── types.ts           # Data types
+│   └── schemas.ts         # Zod validation schemas
+├── scripts/               # Management scripts
+│   ├── setup.sh          # Initial setup
+│   ├── start_http.sh     # Start HTTP server
+│   ├── start_typescript.sh # Start TypeScript version
+│   ├── setup_cursor_mcp.sh # Cursor setup
+│   ├── test.sh           # Run tests
+│   ├── test_mcp.js       # Test HTTP server
+│   ├── test_mcp_stdin.js # Test STDIN server
+│   └── README.md         # Scripts documentation
+├── .cursor/               # Cursor MCP configuration
+│   └── mcp.json          # MCP configuration file (CRITICALLY IMPORTANT!)
+├── dist/                  # Compiled TypeScript code
+├── *.js                   # Main JS files
+├── example.env            # Environment configuration example
+├── package.json           # Project metadata
+└── README.md             # Main documentation
 ```
 
-> **🚨 КРИТИЧЕСКИ ВАЖНО:** Файл `.cursor/mcp.json` обязателен для работы с Cursor!
+> **🚨 CRITICALLY IMPORTANT:** `.cursor/mcp.json` file is required for Cursor integration!
 
-### Доступные скрипты
+### Available Scripts
 
-#### Настройка и сборка
+#### Setup and Build
 
-- `npm run setup` - Первоначальная настройка проекта
-- `npm run build` - Сборка TypeScript проекта
-- `npm run setup:cursor` - Настройка интеграции с Cursor
+- `npm run setup` - Initial project setup
+- `npm run build` - Build TypeScript project
+- `npm run setup:cursor` - Setup Cursor integration
 
-#### Запуск серверов
+#### Running Servers
 
-- `npm start` / `npm run start:http` - HTTP MCP сервер (порт 3200)
-- `npm run start:typescript` - TypeScript версия сервера (порт 8000)
-- `npm run server:stdio` - STDIO версия для прямой интеграции
+- `npm start` / `npm run start:http` - HTTP MCP server (port 3200)
+- `npm run start:typescript` - TypeScript version of server (port 8000)
+- `npm run server:stdio` - STDIO version for direct integration
 
-#### Разработка и тестирование
+#### Development and Testing
 
-- `npm run dev` - Режим разработки с hot reload
-- `npm run demo` - Демонстрация возможностей
-- `npm test` - Запуск тестов
-- `npm run client` - Запуск демо-клиента
-- `npm run http-client` - Запуск HTTP клиента
+- `npm run dev` - Development mode with hot reload
+- `npm run demo` - Capability demonstration
+- `npm test` - Run tests
+- `npm run client` - Run demo client
+- `npm run http-client` - Run HTTP client
 
-### API Endpoints (HTTP режим)
+### API Endpoints (HTTP mode)
 
-- `GET /tools` - Список доступных инструментов
-- `GET /health` - Проверка состояния сервера
+- `GET /tools` - List of available tools
+- `GET /health` - Server health check
 - `POST /mcp` - MCP JSON-RPC endpoint
 
-### Примеры использования
+### Usage Examples
 
 ```javascript
-// Получение списка страниц
+// Get list of pages
 {
   "method": "list_pages",
   "params": {
@@ -268,102 +268,102 @@ wikijs-mcp-server/
   }
 }
 
-// Создание новой страницы
+// Create new page
 {
   "method": "create_page",
   "params": {
-    "title": "Новая страница",
-    "content": "# Заголовок\n\nСодержимое...",
+    "title": "New Page",
+    "content": "# Title\n\nContent...",
     "path": "folder/new-page"
   }
 }
 ```
 
-## 🐛 Решение проблем
+## 🐛 Troubleshooting
 
-### Проблемы с подключением
+### Connection Issues
 
-1. Убедитесь, что Wiki.js запущен и доступен
-2. Проверьте правильность WIKIJS_BASE_URL
-3. Убедитесь, что API токен действителен
+1. Ensure Wiki.js is running and accessible
+2. Check WIKIJS_BASE_URL correctness
+3. Verify API token is valid
 
-### Проблемы с MCP
+### MCP Issues
 
-1. Проверьте версию Node.js (требуется >=18.0.0)
-2. Убедитесь, что все зависимости установлены
-3. Проверьте логи сервера на наличие ошибок
+1. Check Node.js version (requires >=18.0.0)
+2. Ensure all dependencies are installed
+3. Check server logs for errors
 
-## 📚 Документация
+## 📚 Documentation
 
-- [Документация скриптов](./scripts/README.md) - описание всех скриптов управления
-- [История изменений](./CHANGELOG.md) - журнал релизов и обновлений
-- [Лицензия](./LICENSE) - условия использования проекта
+- [Scripts Documentation](./scripts/README.md) - description of all management scripts
+- [Changelog](./CHANGELOG.md) - release and update log
+- [License](./LICENSE) - project usage terms
 
-## 🤝 Участие в разработке
+## 🤝 Contributing
 
-1. Форкните репозиторий
-2. Создайте ветку для новой функции (`git checkout -b feature/amazing-feature`)
-3. Зафиксируйте изменения (`git commit -m 'Add amazing feature'`)
-4. Загрузите в ветку (`git push origin feature/amazing-feature`)
-5. Откройте Pull Request
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-## 📄 Лицензия
+## 📄 License
 
-Этот проект распространяется под лицензией MIT. См. файл [LICENSE](LICENSE) для подробностей.
+This project is distributed under the MIT License. See [LICENSE](LICENSE) file for details.
 
-## 🔗 Полезные ссылки
+## 🔗 Useful Links
 
-- [Wiki.js](https://js.wiki/) - Официальный сайт Wiki.js
-- [Model Context Protocol](https://spec.modelcontextprotocol.io/) - Спецификация MCP
-- [Anthropic](https://www.anthropic.com/) - Разработчик протокола MCP
-- [GraphQL](https://graphql.org/) - Язык запросов для API
+- [Wiki.js](https://js.wiki/) - Official Wiki.js website
+- [Model Context Protocol](https://spec.modelcontextprotocol.io/) - MCP specification
+- [Anthropic](https://www.anthropic.com/) - MCP protocol developer
+- [GraphQL](https://graphql.org/) - Query language for APIs
 
-## ⭐ Поддержка
+## ⭐ Support
 
-Если этот проект помог вам, поставьте ⭐ на GitHub!
+If this project helped you, please give it a ⭐ on GitHub!
 
-Есть вопросы? Создайте [Issue](https://github.com/heAdz0r/wikijs-mcp-server/issues) или обратитесь к документации.
+Have questions? Create an [Issue](https://github.com/heAdz0r/wikijs-mcp-server/issues) or refer to the documentation.
 
-## 🆕 Новая функциональность: Автоматические URL
+## 🆕 New Feature: Automatic URLs
 
-### Этапы поиска
+### Search Stages
 
-Поиск работает в 4 этапа:
+Search works in 4 stages:
 
-1. **GraphQL API поиск** - быстрый поиск по индексированному содержимому
-2. **Поиск по метаданным** - поиск в названиях, путях и описаниях страниц
-3. **HTTP поиск по содержимому** - глубокий поиск в содержимом страниц через HTTP
-4. **Принудительная проверка** - резервный поиск на известных страницах
+1. **GraphQL API search** - fast search through indexed content
+2. **Metadata search** - search in titles, paths, and page descriptions
+3. **HTTP content search** - deep search in page content via HTTP
+4. **Forced verification** - fallback search on known pages
 
-### Примеры использования
+### Usage Examples
 
-#### Поиск по содержимому
+#### Content Search
 
 ```json
 {
   "method": "search_pages",
   "params": {
-    "query": "ЗЕЛЕБОБА",
+    "query": "ZELEBOBA",
     "limit": 5
   }
 }
 ```
 
-**Результат:**
+**Result:**
 
 ```json
 [
   {
     "id": 103,
     "path": "test/test-page",
-    "title": "Тестовая страница",
-    "description": "Тестовая страница для демонстрации возможностей Wiki.js API",
-    "url": "http://localhost:8080/ru/test/test-page"
+    "title": "Test Page",
+    "description": "Test page to demonstrate Wiki.js API capabilities",
+    "url": "http://localhost:8080/en/test/test-page"
   }
 ]
 ```
 
-#### Поиск по названию
+#### Title Search
 
 ```json
 {
@@ -375,7 +375,7 @@ wikijs-mcp-server/
 }
 ```
 
-**Результат:**
+**Result:**
 
 ```json
 [
@@ -383,32 +383,32 @@ wikijs-mcp-server/
     "id": 108,
     "path": "test/test-gemini-mcp",
     "title": "Test Gemini MCP Page (find me)",
-    "url": "http://localhost:8080/ru/test/test-gemini-mcp"
+    "url": "http://localhost:8080/en/test/test-gemini-mcp"
   }
 ]
 ```
 
-### Преимущества нового поиска
+### New Search Benefits
 
-- ✅ **Найдет страницы даже при ограниченных правах API** - использует HTTP fallback
-- ✅ **Многоуровневый поиск** - комбинирует несколько стратегий
-- ✅ **Поиск по содержимому** - находит текст внутри страниц
-- ✅ **Поиск по метаданным** - названия, пути, описания
-- ✅ **Резервные методы** - гарантированный результат для известных страниц
-- ✅ **Корректные URL** - все результаты содержат готовые ссылки
+- ✅ **Finds pages even with limited API permissions** - uses HTTP fallback
+- ✅ **Multi-level search** - combines multiple strategies
+- ✅ **Content search** - finds text inside pages
+- ✅ **Metadata search** - titles, paths, descriptions
+- ✅ **Fallback methods** - guaranteed results for known pages
+- ✅ **Correct URLs** - all results contain ready-to-use links
 
-### Технические детали
+### Technical Details
 
-#### Обработка HTML содержимого
+#### HTML Content Processing
 
-Система автоматически извлекает текст из HTML с помощью:
+The system automatically extracts text from HTML using:
 
-- Поиска в блоке `<template slot="contents">`
-- Очистки HTML-тегов и entities
-- Fallback на полное содержимое страницы
+- Search in `<template slot="contents">` block
+- HTML tags and entities cleanup
+- Fallback to full page content
 
-При ограниченных правах GraphQL API система:
+With limited GraphQL API permissions, the system:
 
-- Переключается на HTTP-метод получения содержимого
-- Использует прямые запросы к HTML-страницам
-- Сохраняет все метаданные страниц
+- Switches to HTTP method for content retrieval
+- Uses direct requests to HTML pages
+- Preserves all page metadata

@@ -1,8 +1,8 @@
-# 🚀 Быстрый старт Wiki.js MCP Server
+# 🚀 Wiki.js MCP Server Quick Start
 
-## За 5 минут до полной интеграции с Cursor
+## From Zero to Full Cursor Integration in 5 Minutes
 
-### 1. Установка (2 минуты)
+### 1. Installation (2 minutes)
 
 ```bash
 git clone https://github.com/heAdz0r/wikijs-mcp-server.git
@@ -10,15 +10,15 @@ cd wikijs-mcp-server
 npm run setup
 ```
 
-### 2. Конфигурация (2 минуты)
+### 2. Configuration (2 minutes)
 
-**Отредактируйте файл `.env`:**
+**Edit the `.env` file:**
 
 ```bash
 nano .env
 ```
 
-**Замените плейсхолдеры на реальные значения:**
+**Replace placeholders with real values:**
 
 ```env
 PORT=3200
@@ -26,13 +26,13 @@ WIKIJS_BASE_URL=http://your-wiki.example.com
 WIKIJS_TOKEN=your_real_wiki_js_api_token
 ```
 
-**Отредактируйте файл `.cursor/mcp.json`:**
+**Edit the `.cursor/mcp.json` file:**
 
 ```bash
 nano .cursor/mcp.json
 ```
 
-**Замените токен на реальный:**
+**Replace token with real one:**
 
 ```json
 {
@@ -51,79 +51,79 @@ nano .cursor/mcp.json
 }
 ```
 
-### 3. Запуск и тестирование (1 минута)
+### 3. Launch and Testing (1 minute)
 
 ```bash
-# Запуск HTTP сервера
+# Start HTTP server
 npm start
 
-# В другом терминале - тест
+# In another terminal - test
 npm test
 ```
 
-### 4. Интеграция с Cursor
+### 4. Cursor Integration
 
-1. **Перезапустите Cursor**
-2. **Проверьте доступность инструментов** - в Cursor должны появиться:
+1. **Restart Cursor**
+2. **Check tool availability** - these should appear in Cursor:
    - `mcp_wikijs_list_pages()`
    - `mcp_wikijs_search_pages()`
    - `mcp_wikijs_get_page()`
-   - И другие...
+   - And others...
 
-### 5. Первое использование
+### 5. First Usage
 
-**В чате Cursor попробуйте:**
-
-```
-Покажи мне список страниц из Wiki.js
-```
+**Try in Cursor chat:**
 
 ```
-Найди все страницы, связанные с "документация"
+Show me a list of pages from Wiki.js
 ```
 
 ```
-Создай новую страницу "Тестовая страница" с содержимым "Это тест"
+Find all pages related to "documentation"
 ```
 
-## ⚡ Если что-то не работает
+```
+Create a new page "Test Page" with content "This is a test"
+```
 
-### Проблема: Cursor не видит инструменты
+## ⚡ If Something Doesn't Work
 
-**Решение:**
+### Issue: Cursor doesn't see tools
 
-1. Убедитесь, что HTTP сервер запущен (`npm start`)
-2. Проверьте `.cursor/mcp.json` - токен должен быть реальным
-3. Перезапустите Cursor
+**Solution:**
 
-### Проблема: Ошибки подключения к Wiki.js
+1. Make sure HTTP server is running (`npm start`)
+2. Check `.cursor/mcp.json` - token must be real
+3. Restart Cursor
 
-**Решение:**
+### Issue: Wiki.js connection errors
 
-1. Проверьте `WIKIJS_BASE_URL` в `.env`
-2. Убедитесь, что API токен действителен
-3. Проверьте доступность Wiki.js
+**Solution:**
 
-### Проблема: Сервер не запускается
+1. Check `WIKIJS_BASE_URL` in `.env`
+2. Make sure API token is valid
+3. Verify Wiki.js accessibility
 
-**Решение:**
+### Issue: Server won't start
+
+**Solution:**
 
 ```bash
-# Проверьте версию Node.js (должна быть ≥18)
+# Check Node.js version (should be ≥18)
 node --version
 
-# Переустановите зависимости
+# Reinstall dependencies
 rm -rf node_modules package-lock.json
 npm install
 npm run build
 ```
 
-## 📞 Поддержка
+## 📞 Support
 
-- 📖 [Полная документация](./README.md)
-- 🐛 [Сообщить о проблеме](https://github.com/heAdz0r/wikijs-mcp-server/issues)
-- 💬 [Обсуждения](https://github.com/heAdz0r/wikijs-mcp-server/discussions)
+- 📖 [Full Documentation](./README.md)
+- 🐛 [Report Issue](https://github.com/heAdz0r/wikijs-mcp-server/issues)
+- 💬 [Discussions](https://github.com/heAdz0r/wikijs-mcp-server/discussions)
 
 ---
 
-**🎉 Готово! Теперь у вас есть полная интеграция Wiki.js с Cursor через MCP!**
+**🎉 Done! You now have full Wiki.js integration with Cursor via MCP!**

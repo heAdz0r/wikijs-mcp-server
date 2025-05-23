@@ -26,12 +26,6 @@ This directory contains compiled JavaScript files and standalone clients for the
 **Usage:** `node lib/mcp_client.js`  
 **Description:** Example client that demonstrates how to connect to and use the MCP server. Useful for testing server functionality and understanding the MCP protocol.
 
-#### `mcp_http_client.js`
-
-**Purpose:** HTTP-based MCP client  
-**Usage:** `node lib/mcp_http_client.js`  
-**Description:** HTTP client specifically designed to interact with the HTTP MCP server. Demonstrates HTTP-based MCP communication patterns.
-
 ### Utility Files
 
 #### `mcp_wrapper.js`

@@ -23,7 +23,6 @@
     "demo": "ts-node src/demo.ts",
     "client": "node lib/mcp_client.js",
     "server:stdio": "node lib/mcp_wikijs_stdin.js",
-    "http-client": "node lib/mcp_http_client.js",
     "test:http": "node scripts/test_mcp.js",
     "test:stdin": "node scripts/test_mcp_stdin.js"
   },

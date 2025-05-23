@@ -529,7 +529,32 @@ With limited GraphQL API permissions, the system:
 
 ### 📄 Page Tools
 
-| Tool Name | Description | Parameters |
-| --------- | ----------- | ---------- |
+| Tool Name                      | Description                                       | Parameters                                                                            |
+| ------------------------------ | ------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `get_page`                     | Get page information by ID                        | `id: number`                                                                          |
+| `get_page_content`             | Get page content by ID                            | `id: number`                                                                          |
+| `list_pages`                   | List pages with sorting                           | `limit?: number, orderBy?: string`                                                    |
+| `search_pages`                 | Search pages by query                             | `query: string, limit?: number`                                                       |
+| `create_page`                  | Create new page                                   | `title: string, content: string, path: string, description?: string, tags?: string[]` |
+| `update_page`                  | Update existing page                              | `id: number, content: string`                                                         |
+| `delete_page`                  | Delete page                                       | `id: number`                                                                          |
+| **`list_all_pages`**           | **🆕 List all pages including unpublished**       | `limit?: number, orderBy?: string, includeUnpublished?: boolean`                      |
+| **`search_unpublished_pages`** | **🆕 Search only unpublished pages**              | `query: string, limit?: number`                                                       |
+| **`force_delete_page`**        | **🆕 Force delete page (works with unpublished)** | `id: number`                                                                          |
+| **`get_page_status`**          | **🆕 Get page publication status**                | `id: number`                                                                          |
+| **`publish_page`**             | **🆕 Publish unpublished page**                   | `id: number`                                                                          |
 
-| `get_page`
+### 👥 User Tools
+
+| Tool Name      | Description             | Parameters                                                                                                                                            |
+| -------------- | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `list_users`   | List all users          | None                                                                                                                                                  |
+| `search_users` | Search users by query   | `query: string`                                                                                                                                       |
+| `create_user`  | Create new user         | `email: string, name: string, passwordRaw: string, providerKey?: string, groups?: number[], mustChangePassword?: boolean, sendWelcomeEmail?: boolean` |
+| `update_user`  | Update user information | `id: number, name: string`                                                                                                                            |
+
+### 🔗 Group Tools
+
+| Tool Name     | Description      | Parameters |
+| ------------- | ---------------- | ---------- |
+| `list_groups` | List user groups | None       |

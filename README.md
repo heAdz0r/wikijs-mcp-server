@@ -415,7 +415,7 @@ Search works in 4 stages:
 {
   "method": "search_pages",
   "params": {
-    "query": "ZELEBOBA",
+    "query": "API",
     "limit": 5
   }
 }
